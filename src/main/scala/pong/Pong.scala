@@ -16,7 +16,7 @@ class Pong(ballSize: Vector2, paddleSize: Vector2, roomSize: Vector2) {
   assert(ballSize.x % roomSize.x == 0, "Room height must be evenly divisible by ball height")
   assert(ballSize.y % roomSize.y == 0, "Room width must be evenly divisible by ball width")
 
-  def step(state: PongState, playerOneInput: PlayerInput, playerTwoInput: PlayerInput): PongState = {
+  def step(state: PongState, playerOneInput: Option[PlayerInput], playerTwoInput: Option[PlayerInput]): PongState = {
     state
   }
 }
