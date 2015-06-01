@@ -17,8 +17,7 @@ class PongSpec extends FunSpec with BeforeAndAfter {
 
     var initialState: PongState = null
     before {
-      initialState = PongState.build(BALL_SIZE, PADDLE_SIZE, ROOM_SIZE)
-      println("======= BEFORE =======")
+      initialState = PONG.generate
     }
 
     describe("ball") {

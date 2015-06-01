@@ -1,6 +1,9 @@
 package pong
 
 import LensTransforms._
+
+import scala.scalajs.js.annotation.JSExport
+
 /**
  * Initializes a new pong instance
  * @param ballSize height, width of ball. Must be even
@@ -9,6 +12,7 @@ import LensTransforms._
  * @param roomSize height, width of room. Height/width must be
  *                   evenly divisible by ball height/width
  */
+@JSExport
 class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
   assert(ballSize.width % 2 == 0, "Ball width must be even")
   assert(ballSize.height % 2 == 0, "Ball height must be even")
@@ -24,8 +28,29 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
     ballCollision _
   )
 
+  @JSExport
   def step(state: PongState, playerOneInput: Option[PlayerInput], playerTwoInput: Option[PlayerInput]): PongState = {
     TRANSFORMS.foldLeft(state)((state, transform) => transform(state))
+  }
+
+  @JSExport
+  def generate = {
+    val MIDDLE = Position(roomSize.width / 2, roomSize.height / 2)
+    val P1_PADDLE = Position(MIDDLE.y, ballSize.width * 4)
+    val P2_PADDLE = Position(MIDDLE.y, roomSize.width - (ballSize.width * 4))
+    val INITIAL_VELOCITY = Velocity(ballSize.width, ballSize.height)
+
+    PongState(
+      ball = Ball(
+        position = MIDDLE,
+        velocity = INITIAL_VELOCITY
+      ),
+      paddles = Paddles(
+        playerOne = P1_PADDLE,
+        playerTwo = P2_PADDLE
+      ),
+      score = Score(0, 0)
+    )
   }
 
   def updateBallPosition(s: PongState): PongState = {
