@@ -1,6 +1,6 @@
 package pong
 
-import com.softwaremill.quicklens._
+import LensTransforms._
 /**
  * Initializes a new pong instance
  * @param ballSize height, width of ball. Must be even
@@ -20,7 +20,8 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
   assert(roomSize.height % ballSize.height == 0, "Room width must be evenly divisible by ball width")
 
   val TRANSFORMS = List(
-    updateBallPosition _
+    updateBallPosition _,
+    ballCollision _
   )
 
   def step(state: PongState, playerOneInput: Option[PlayerInput], playerTwoInput: Option[PlayerInput]): PongState = {
@@ -28,7 +29,37 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
   }
 
   def updateBallPosition(s: PongState): PongState = {
-    val transform = modify(_: PongState)(_.ball.position).using(_.update(s.ball.velocity))
-    transform(s)
+    updateBallPos(s).using(_.update(s.ball.velocity))
+  }
+  def ballCollision(s: PongState): PongState = {
+    def paddleCollision(s: PongState): Boolean = {
+      val paddles = List(s.paddles.playerOne, s.paddles.playerTwo)
+      paddles.exists(paddle => intersects(s.ball.position, ballSize, paddle, paddleSize))
+    }
+    
+    if(paddleCollision(s))
+      updateBallVel(s).using(vel => vel.copy(x = -vel.x))
+    else
+      s
+  }
+
+  def intersects(positionOne: Position, sizeOne: Size, positionTwo: Position, sizeTwo: Size): Boolean = {
+    case class Rectangle(x1: Int, x2: Int, y1: Int, y2: Int)
+    def getBoundingBox(position: Position, size: Size): Rectangle = {
+      Rectangle(
+        positionOne.x - (sizeOne.width / 2),
+        positionOne.x + (sizeOne.width / 2),
+        positionOne.y - (sizeOne.height / 2),
+        positionOne.y + (sizeOne.height / 2)
+      )
+    }
+    val rectA = getBoundingBox(positionOne, sizeOne)
+    val rectB = getBoundingBox(positionTwo, sizeTwo)
+
+    val noOverlap =  rectA.x1 > rectB.x2 ||
+                     rectB.x1 > rectA.x2 ||
+                     rectA.y1 > rectB.y2 ||
+                     rectB.y1 > rectA.y2
+    !noOverlap
   }
 }
