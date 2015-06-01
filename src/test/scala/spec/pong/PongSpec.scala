@@ -18,6 +18,7 @@ class PongSpec extends FunSpec with BeforeAndAfter {
     var initialState: PongState = null
     before {
       initialState = PongState.build(BALL_SIZE, PADDLE_SIZE, ROOM_SIZE)
+      println("======= BEFORE =======")
     }
 
     describe("ball") {
@@ -35,6 +36,22 @@ class PongSpec extends FunSpec with BeforeAndAfter {
         val afterCollisionState = updateBallVel(beforeCollisionState).using(_ => Velocity(16, 0))
 
         assert(PONG.ballCollision(beforeCollisionState) == afterCollisionState)
+      }
+
+      it("inverts y velocity when it contacts a wall") {
+        val beforeCollisionState = updateBall(initialState).using(_.copy (
+          position = Position(ROOM_SIZE.width / 2, ROOM_SIZE.height + (BALL_SIZE.height/2)),
+          velocity = Velocity(16, 16)
+        ))
+        val afterCollisionState = updateBallVel(beforeCollisionState).using(_ => Velocity(16, -16))
+
+        assert(PONG.ballCollision(beforeCollisionState) == afterCollisionState)
+      }
+    }
+
+    describe("ballCollision") {
+      it("doesn't detect any collisions on an initial game state") {
+        assert(PONG.ballCollision(initialState) == initialState)
       }
     }
   }

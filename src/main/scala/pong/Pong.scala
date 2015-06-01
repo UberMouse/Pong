@@ -36,9 +36,18 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
       val paddles = List(s.paddles.playerOne, s.paddles.playerTwo)
       paddles.exists(paddle => intersects(s.ball.position, ballSize, paddle, paddleSize))
     }
+    def wallCollision(s: PongState): Boolean = {
+      val ballPos = s.ball.position
+      ballPos.x > roomSize.width ||
+      ballPos.x < 0 ||
+      ballPos.y > roomSize.height ||
+      ballPos.y < 0
+    }
     
     if(paddleCollision(s))
       updateBallVel(s).using(vel => vel.copy(x = -vel.x))
+    else if(wallCollision(s))
+      updateBallVel(s).using(vel => vel.copy(y = -vel.y))
     else
       s
   }
@@ -47,10 +56,10 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
     case class Rectangle(x1: Int, x2: Int, y1: Int, y2: Int)
     def getBoundingBox(position: Position, size: Size): Rectangle = {
       Rectangle(
-        positionOne.x - (sizeOne.width / 2),
-        positionOne.x + (sizeOne.width / 2),
-        positionOne.y - (sizeOne.height / 2),
-        positionOne.y + (sizeOne.height / 2)
+        position.x - (size.width / 2),
+        position.x + (size.width / 2),
+        position.y - (size.height / 2),
+        position.y + (size.height / 2)
       )
     }
     val rectA = getBoundingBox(positionOne, sizeOne)
@@ -60,6 +69,7 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
                      rectB.x1 > rectA.x2 ||
                      rectA.y1 > rectB.y2 ||
                      rectB.y1 > rectA.y2
+
     !noOverlap
   }
 }
