@@ -36,9 +36,9 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
   @JSExport
   def generate = {
     val MIDDLE = Position(roomSize.width / 2, roomSize.height / 2)
-    val P1_PADDLE = Position(MIDDLE.y, ballSize.width * 4)
-    val P2_PADDLE = Position(MIDDLE.y, roomSize.width - (ballSize.width * 4))
-    val INITIAL_VELOCITY = Velocity(ballSize.width, ballSize.height)
+    val P1_PADDLE = Position(ballSize.width * 4, MIDDLE.y)
+    val P2_PADDLE = Position(roomSize.width - (ballSize.width * 4), MIDDLE.y)
+    val INITIAL_VELOCITY = Velocity(-ballSize.width, ballSize.height)
 
     PongState(
       ball = Ball(

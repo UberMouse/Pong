@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pong</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <script src="https://fb.me/react-with-addons-0.13.3.js"></script>
+    <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
+    <script type="text/javascript" src="./target/scala-2.11/pong-fastopt.js"></script>
+</head>
+<body>
+<div id="pong">
+</div>
+
+<script type="text/jsx">
+    var Score = React.createClass({
+        render: function () {
+            return (<span></span>);
+        }
+    });
+    var Paddle = React.createClass({
+        render: function () {
+            var paddleStyle = {
+                position: 'absolute',
+                height: this.props.size.height$1 + 'px',
+                width: this.props.size.width$1 + 'px',
+                backgroundColor: 'white',
+                top: this.props.position.y$1 + 'px',
+                left: this.props.position.x$1 + 'px',
+            };
+            return (
+                    <div style={paddleStyle}></div>
+            );
+        }
+    });
+    var Ball = React.createClass({
+        render: function () {
+            var ballStyle = {
+                position: 'absolute',
+                height: this.props.size.height$1 + 'px',
+                width: this.props.size.width$1 + 'px',
+                backgroundColor: 'white',
+                top: this.props.position.y$1 + 'px',
+                left: this.props.position.x$1 + 'px',
+            };
+            return (
+                    <div style={ballStyle}></div>
+            );
+        }
+    });
+    var Room = React.createClass({
+        render: function () {
+            var roomStyle = {
+                border: 'white 10px solid',
+                height: this.props.sizes.roomSize.height$1 + 'px',
+                width: this.props.sizes.roomSize.width$1 + 'px',
+                backgroundColor: 'black'
+            };
+            return (
+                    <div style={roomStyle}>
+                        <Paddle position={this.props.paddlePositions.playerOne$1} size={this.props.sizes.paddleSize}/>
+                        <Paddle position={this.props.paddlePositions.playerTwo$1} size={this.props.sizes.paddleSize}/>
+
+                        <Ball position={this.props.ball.position$1} size={this.props.sizes.ballSize}/>
+                    </div>
+            );
+        }
+    });
+    var Pong = React.createClass({
+        render: function () {
+            return (
+                    <div>
+                        <Score scores={this.props.state.scores$1}/>
+                        <Room paddlePositions={this.props.state.paddles$1} ball={this.props.state.ball$1}
+                              sizes={this.props.sizes}/>
+                    </div>
+            )
+        }
+    });
+
+    var App = React.createClass({
+        getInitialState: function () {
+            ballSize = new pong.Size(16, 16);
+            paddleSize = new pong.Size(16, 64);
+            roomSize = new pong.Size(512, 256);
+
+            pongGame = new pong.Pong(ballSize, paddleSize, roomSize);
+            state = pongGame.generate;
+
+            return {
+                game: pongGame,
+                pongState: state
+            };
+        },
+        step: function(timestamp) {
+            if(this.state.lastAnimationFrame == undefined || timestamp - this.state.lastAnimationFrame > 100) {
+                var newState = this.state.game.step(this.state.pongState, null, null);
+                this.setState({pongState: newState, lastAnimationFrame: timestamp});
+            }
+            window.requestAnimationFrame(this.step);
+        },
+        componentDidMount: function() {
+            window.requestAnimationFrame(this.step)
+        },
+        render: function () {
+            return (
+                <Pong state={this.state.pongState} sizes={{
+                    ballSize: ballSize,
+                    paddleSize: paddleSize,
+                    roomSize: roomSize
+                }}/>
+            )
+        }
+    });
+
+
+    React.render(<App />, document.getElementById("pong"))
+</script>
+</body>
+</html>
