@@ -1,5 +1,6 @@
 package pong
 
+import com.softwaremill.quicklens._
 /**
  * Initializes a new pong instance
  * @param ballSize height, width of ball. Must be even
@@ -27,10 +28,7 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
   }
 
   def updateBallPosition(s: PongState): PongState = {
-    s.copy(
-      ball = s.ball.copy(
-        position = s.ball.position.update(s.ball.velocity)
-      )
-    )
+    val transform = modify(_: PongState)(_.ball.position).using(_.update(s.ball.velocity))
+    transform(s)
   }
 }
