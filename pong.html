@@ -15,7 +15,21 @@
 <script type="text/jsx">
     var Score = React.createClass({
         render: function () {
-            return (<span></span>);
+            var style = {
+                border: 'white 5px solid',
+                width: '100px',
+                height: '45px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                color: 'white'
+            };
+            return (
+                <div style={style} >
+                    <span style={{float: 'left'}}>Player 1: {this.props.scores.playerOne$1}</span>
+                    <br />
+                    <span style={{float: 'left'}}>Player 2: {this.props.scores.playerTwo$1}</span>
+                </div>
+            );
         }
     });
     var Paddle = React.createClass({
@@ -58,6 +72,7 @@
             };
             return (
                     <div style={roomStyle}>
+                        {this.props.children}
                         <Paddle position={this.props.paddlePositions.playerOne$1} size={this.props.sizes.paddleSize}/>
                         <Paddle position={this.props.paddlePositions.playerTwo$1} size={this.props.sizes.paddleSize}/>
 
@@ -70,9 +85,10 @@
         render: function () {
             return (
                     <div>
-                        <Score scores={this.props.state.scores$1}/>
                         <Room paddlePositions={this.props.state.paddles$1} ball={this.props.state.ball$1}
-                              sizes={this.props.sizes}/>
+                              sizes={this.props.sizes}>
+                            <Score scores={this.props.state.score$1}/>
+                        </Room>
                     </div>
             )
         }
