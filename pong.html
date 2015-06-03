@@ -81,8 +81,8 @@
     var App = React.createClass({
         getInitialState: function () {
             ballSize = new pong.Size(16, 16);
-            paddleSize = new pong.Size(16, 64);
-            roomSize = new pong.Size(512, 256);
+            paddleSize = new pong.Size(16, 128);
+            roomSize = new pong.Size(1600, 960);
 
             pongGame = new pong.Pong(ballSize, paddleSize, roomSize);
             state = pongGame.generate;
