@@ -12,6 +12,7 @@ object PongSpec extends TestSuite {
   val PONG = new Pong(BALL_SIZE,
                       PADDLE_SIZE,
                       ROOM_SIZE)
+  val MIDDLE = Position(ROOM_SIZE.width/2, ROOM_SIZE.height/2)
   val initialState = PONG.generate
 
   val tests = TestSuite {
@@ -43,6 +44,29 @@ object PongSpec extends TestSuite {
           val afterCollisionState = updateBallVel(beforeCollisionState).using(_ => Velocity(16, -16))
 
           assert(PONG.ballCollision(beforeCollisionState) == afterCollisionState)
+        }
+
+        "touches player ones wall" - {
+          val postCollision = PONG.step(updateBallPos(initialState).using(_ => Position(BALL_SIZE.width/2, MIDDLE.y)), None, None)
+
+          "increments player twos score" - {
+            assert(postCollision.score.playerTwo == 1)
+          }
+          "resets the round" - {
+            assert(postCollision.paddles == initialState.paddles)
+            assert(postCollision.ball == initialState.ball)
+          }
+        }
+        "touches player twos wall" - {
+          val postCollision = PONG.step(updateBallPos(initialState).using(_ => Position(ROOM_SIZE.width + BALL_SIZE.width, MIDDLE.y)), None, None)
+
+          "increments player ones score" - {
+            assert(postCollision.score.playerOne == 1)
+          }
+          "resets the round" - {
+            assert(postCollision.paddles == initialState.paddles)
+            assert(postCollision.ball == initialState.ball)
+          }
         }
       }
       'ballCollision {

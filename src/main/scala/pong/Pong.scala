@@ -25,8 +25,11 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
 
   val TRANSFORMS = List(
     updateBallPosition _,
-    ballCollision _
+    ballCollision _,
+    updateRoundStatus _
   )
+
+  // ==== Public API ====
 
   @JSExport
   def step(state: PongState, playerOneInput: Option[PlayerInput], playerTwoInput: Option[PlayerInput]): PongState = {
@@ -53,6 +56,8 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
     )
   }
 
+  // ==== Transforms ====
+
   def updateBallPosition(s: PongState): PongState = {
     updateBallPos(s).using(_.update(s.ball.velocity))
   }
@@ -76,6 +81,26 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
     else
       s
   }
+
+  def updateRoundStatus(s: PongState): PongState = {
+    val initialState = generate
+    val ballPosition = s.ball.position
+    List(
+      (ballPosition.x <= 0, updateP2Score(s).using(current => current + 1)),
+      (ballPosition.x >= roomSize.width, updateP1Score(s).using(current => current + 1))
+    ).filter(_._1)
+     .map(_._2)
+     .map(_.copy(
+          ball = initialState.ball,
+          paddles = initialState.paddles
+        )
+     )
+     .headOption
+     .getOrElse(s)
+  }
+
+
+  // ==== Utility ====
 
   def intersects(positionOne: Position, sizeOne: Size, positionTwo: Position, sizeTwo: Size): Boolean = {
     case class Rectangle(x1: Int, x2: Int, y1: Int, y2: Int)
