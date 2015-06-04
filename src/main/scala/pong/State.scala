@@ -6,6 +6,7 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportDescendentClasses, JSEx
 trait PlayerInput
 case class Up() extends PlayerInput
 case class Down() extends PlayerInput
+case class NoInput() extends PlayerInput
 
 @JSExport
 case class Size(width: Int, height: Int)

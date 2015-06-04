@@ -7,6 +7,7 @@
     <script src="https://fb.me/react-with-addons-0.13.3.js"></script>
     <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
     <script type="text/javascript" src="./target/scala-2.11/pong-fastopt.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.js"></script>
 </head>
 <body>
 <div id="pong">
@@ -95,13 +96,19 @@
     });
 
     var App = React.createClass({
+        inputsSinceLastUpdate: {
+            playerOne: null,
+            playerTwo: null
+        },
         getInitialState: function () {
-            ballSize = new pong.Size(16, 16);
-            paddleSize = new pong.Size(16, 128);
-            roomSize = new pong.Size(1600, 960);
+            this.ballSize = new pong.Size(16, 16);
+            this.paddleSize = new pong.Size(16, 128);
+            this.roomSize = new pong.Size(1600, 960);
+            this.initialVelocity = new pong.Velocity(-6, 6);
+            this.paddleMovementPerFrame = 6;
 
-            pongGame = new pong.Pong(ballSize, paddleSize, roomSize);
-            state = pongGame.generate;
+            var pongGame = new pong.Pong(this.ballSize, this.paddleSize, this.roomSize, this.initialVelocity, this.paddleMovementPerFrame);
+            var state = pongGame.generate;
 
             return {
                 game: pongGame,
@@ -109,21 +116,44 @@
             };
         },
         step: function(timestamp) {
-            if(this.state.lastAnimationFrame == undefined || timestamp - this.state.lastAnimationFrame > 100) {
-                var newState = this.state.game.step(this.state.pongState, null, null);
+            if(this.state.lastAnimationFrame == undefined || timestamp - this.state.lastAnimationFrame > 20) {
+                var newState = this.state.game.jsStep(this.state.pongState,
+                                                      this.inputsSinceLastUpdate.playerOne,
+                                                      this.inputsSinceLastUpdate.playerTwo);
                 this.setState({pongState: newState, lastAnimationFrame: timestamp});
+                this.inputsSinceLastUpdate = {
+                    playerOne: null,
+                    playerTwo: null
+                }
             }
             window.requestAnimationFrame(this.step);
         },
+        keyDown: function(e) {
+            switch(e.which) {
+                case 75: //up arrow
+                    this.inputsSinceLastUpdate.playerTwo = pong.Up();
+                    break;
+                case 77: //down arrow
+                    this.inputsSinceLastUpdate.playerTwo = pong.Down();
+                    break;
+                case 65: //a
+                    this.inputsSinceLastUpdate.playerOne = pong.Up();
+                    break;
+                case 90://z
+                    this.inputsSinceLastUpdate.playerOne = pong.Down();
+                    break;
+            }
+        },
         componentDidMount: function() {
+            $(document).on("keydown", this.keyDown);
             window.requestAnimationFrame(this.step)
         },
         render: function () {
             return (
                 <Pong state={this.state.pongState} sizes={{
-                    ballSize: ballSize,
-                    paddleSize: paddleSize,
-                    roomSize: roomSize
+                    ballSize: this.ballSize,
+                    paddleSize: this.paddleSize,
+                    roomSize: this.roomSize
                 }}/>
             )
         }

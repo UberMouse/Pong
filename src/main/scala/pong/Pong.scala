@@ -2,6 +2,7 @@ package pong
 
 import LensTransforms._
 
+import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
 
 /**
@@ -13,7 +14,7 @@ import scala.scalajs.js.annotation.JSExport
  *                   evenly divisible by ball height/width
  */
 @JSExport
-class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
+class Pong(ballSize: Size, paddleSize: Size, roomSize: Size, ballInitialVelocity: Velocity, paddleMovementPerFrame: Int) {
   assert(ballSize.width % 2 == 0, "Ball width must be even")
   assert(ballSize.height % 2 == 0, "Ball height must be even")
   assert(paddleSize.width >= ballSize.width, "Paddle width must be greater than or equal to ball width")
@@ -25,6 +26,7 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
 
   val TRANSFORMS = List(
     updateBallPosition _,
+    handleInput _,
     ballCollision _,
     updateRoundStatus _
   )
@@ -33,7 +35,16 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
 
   @JSExport
   def step(state: PongState, playerOneInput: Option[PlayerInput], playerTwoInput: Option[PlayerInput]): PongState = {
-    TRANSFORMS.foldLeft(state)((state, transform) => transform(state))
+    TRANSFORMS.foldLeft(state)((state, transform) => transform(
+      state,
+      playerOneInput.getOrElse(NoInput()),
+      playerTwoInput.getOrElse(NoInput())
+    ))
+  }
+
+  @JSExport
+  def jsStep(state: PongState, playerOneInput: js.UndefOr[PlayerInput], playerTwoInput: js.UndefOr[PlayerInput]): PongState = {
+    step(state, playerOneInput.toOption, playerTwoInput.toOption)
   }
 
   @JSExport
@@ -41,12 +52,11 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
     val MIDDLE = Position(roomSize.width / 2, roomSize.height / 2)
     val P1_PADDLE = Position(ballSize.width * 4, MIDDLE.y)
     val P2_PADDLE = Position(roomSize.width - (ballSize.width * 4), MIDDLE.y)
-    val INITIAL_VELOCITY = Velocity(-ballSize.width, ballSize.height)
 
     PongState(
       ball = Ball(
         position = MIDDLE,
-        velocity = INITIAL_VELOCITY
+        velocity = ballInitialVelocity
       ),
       paddles = Paddles(
         playerOne = P1_PADDLE,
@@ -58,10 +68,11 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
 
   // ==== Transforms ====
 
-  def updateBallPosition(s: PongState): PongState = {
+  def updateBallPosition(s: PongState, p1Input: PlayerInput, p2Input: PlayerInput): PongState = {
     updateBallPos(s).using(_.update(s.ball.velocity))
   }
-  def ballCollision(s: PongState): PongState = {
+
+  def ballCollision(s: PongState, p1Input: PlayerInput, p2Input: PlayerInput): PongState = {
     def paddleCollision(s: PongState): Boolean = {
       val paddles = List(s.paddles.playerOne, s.paddles.playerTwo)
       paddles.exists(paddle => intersects(s.ball.position, ballSize, paddle, paddleSize))
@@ -73,7 +84,7 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
       ballPos.y > roomSize.height ||
       ballPos.y < 0
     }
-    
+
     if(paddleCollision(s))
       updateBallVel(s).using(vel => vel.copy(x = -vel.x))
     else if(wallCollision(s))
@@ -82,7 +93,7 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
       s
   }
 
-  def updateRoundStatus(s: PongState): PongState = {
+  def updateRoundStatus(s: PongState, p1Input: PlayerInput, p2Input: PlayerInput): PongState = {
     val initialState = generate
     val ballPosition = s.ball.position
     List(
@@ -99,6 +110,37 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size) {
      .getOrElse(s)
   }
 
+  def handleInput(s: PongState, p1Input: PlayerInput, p2Input: PlayerInput): PongState = {
+    // Couldn't figure out how to get something like this working, just went the shit route
+    //    List(
+    //      (p1Input, updateP1PaddlePos(s)),
+    //      (p2Input, updateP2PaddlePos(s))
+    //    ).foldLeft(s)((state, inputInformation) => {
+    //       val state = inputInformation._2
+    //       inputInformation._1 match {
+    //         case Up() =>
+    //           state.using(pos => pos.copy(y = pos.y + paddleMovementPerFrame))
+    //         case Down() =>
+    //           state.using(pos => pos.copy(y = pos.y - paddleMovementPerFrame))
+    //         case NoInput() => state.using(x => x)
+    //       }
+    //      }
+    //    )
+    val updatedState = p1Input match {
+      case Up() =>
+        updateP1PaddlePos(s).using(pos => pos.copy(y = pos.y - paddleMovementPerFrame))
+      case Down() =>
+        updateP1PaddlePos(s).using(pos => pos.copy(y = pos.y + paddleMovementPerFrame))
+      case _ => s
+    }
+    p2Input match {
+      case Up() =>
+        updateP2PaddlePos(updatedState).using(pos => pos.copy(y = pos.y - paddleMovementPerFrame))
+      case Down() =>
+        updateP2PaddlePos(updatedState).using(pos => pos.copy(y = pos.y + paddleMovementPerFrame))
+      case _ => updatedState
+    }
+  }
 
   // ==== Utility ====
 

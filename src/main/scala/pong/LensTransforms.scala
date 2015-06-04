@@ -8,4 +8,7 @@ object LensTransforms {
 
   val updateP1Score = modify(_: PongState)(_.score.playerOne)
   val updateP2Score = modify(_: PongState)(_.score.playerTwo)
+
+  val updateP1PaddlePos = modify(_: PongState)(_.paddles.playerOne)
+  val updateP2PaddlePos = modify(_: PongState)(_.paddles.playerTwo)
 }
