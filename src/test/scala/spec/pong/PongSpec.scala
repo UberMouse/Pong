@@ -71,8 +71,17 @@ object PongSpec extends TestSuite {
           }
         }
       }
-      'paddles {
+      "collision edge cases" -{
+        "ball collides with bottom of paddle" - {
+          val beforeCollisionState = updateBall(initialState).using(_ => Ball(
+            position = initialState.paddles.playerOne.update(Velocity(PADDLE_SIZE.width / 2, PADDLE_SIZE.height)),
+            velocity = Velocity(-16, 0)
+          ))
+          val afterCollisionState = updateBallVel(beforeCollisionState).using(_ => Velocity(16, 0))
+          val actualState = PONG.ballCollision(beforeCollisionState, NoInput(), NoInput())
 
+          assert(actualState == afterCollisionState)
+        }
       }
       'ballCollision {
         "doesn't detect any collisions on an initial game state" - {

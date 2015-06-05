@@ -8,6 +8,11 @@
     <script src="https://fb.me/JSXTransformer-0.13.3.js"></script>
     <script type="text/javascript" src="./target/scala-2.11/pong-fastopt.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.js"></script>
+    <style>
+        body {
+
+        }
+    </style>
 </head>
 <body>
 <div id="pong">
@@ -35,13 +40,21 @@
     });
     var Paddle = React.createClass({
         render: function () {
+            var height = this.props.size.height$1;
+            var width = this.props.size.width$1;
+            var x = this.props.position.x$1;
+            var y = this.props.position.y$1;
+
             var paddleStyle = {
                 position: 'absolute',
-                height: this.props.size.height$1 + 'px',
-                width: this.props.size.width$1 + 'px',
+                height: height + 'px',
+                width: width + 'px',
                 backgroundColor: 'white',
-                top: this.props.position.y$1 + 'px',
-                left: this.props.position.x$1 + 'px',
+                top: y - (height/2)  + 'px',
+                left: x - (width/2) + 'px',
+                transitionProperty: 'top left',
+                transitionDuration: '20ms',
+                transitionTimingFunction: 'linear'
             };
             return (
                     <div style={paddleStyle}></div>
@@ -57,6 +70,9 @@
                 backgroundColor: 'white',
                 top: this.props.position.y$1 + 'px',
                 left: this.props.position.x$1 + 'px',
+                transitionProperty: 'top left',
+                transitionDuration: '10ms',
+                transitionTimingFunction: 'linear'
             };
             return (
                     <div style={ballStyle}></div>
@@ -104,8 +120,8 @@
             this.ballSize = new pong.Size(16, 16);
             this.paddleSize = new pong.Size(16, 128);
             this.roomSize = new pong.Size(1600, 960);
-            this.initialVelocity = new pong.Velocity(-6, 6);
-            this.paddleMovementPerFrame = 6;
+            this.initialVelocity = new pong.Velocity(-10, 10);
+            this.paddleMovementPerFrame = 24;
 
             var pongGame = new pong.Pong(this.ballSize, this.paddleSize, this.roomSize, this.initialVelocity, this.paddleMovementPerFrame);
             var state = pongGame.generate;
@@ -121,12 +137,13 @@
                                                       this.inputsSinceLastUpdate.playerOne,
                                                       this.inputsSinceLastUpdate.playerTwo);
                 this.setState({pongState: newState, lastAnimationFrame: timestamp});
+                console.log(this.state.pongState);
                 this.inputsSinceLastUpdate = {
                     playerOne: null,
                     playerTwo: null
                 }
             }
-            window.requestAnimationFrame(this.step);
+            //window.requestAnimationFrame(this.step);
         },
         keyDown: function(e) {
             switch(e.which) {
@@ -141,6 +158,9 @@
                     break;
                 case 90://z
                     this.inputsSinceLastUpdate.playerOne = pong.Down();
+                    break;
+                case 32:
+                    this.step(window.performance.now());
                     break;
             }
         },

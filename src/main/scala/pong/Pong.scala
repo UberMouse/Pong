@@ -27,8 +27,8 @@ class Pong(ballSize: Size, paddleSize: Size, roomSize: Size, ballInitialVelocity
   val TRANSFORMS = List(
     updateBallPosition _,
     handleInput _,
-    ballCollision _,
-    updateRoundStatus _
+    ballCollision _
+    //updateRoundStatus _
   )
 
   // ==== Public API ====
